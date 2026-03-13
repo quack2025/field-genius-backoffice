@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getSession, Session, RawFile } from "../lib/api";
+import { getSession } from "../lib/api";
+import type { Session, RawFile } from "../lib/api";
 
 const STATUS_COLORS: Record<string, string> = {
   accumulating: "bg-blue-100 text-blue-800",
