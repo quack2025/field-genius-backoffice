@@ -5,6 +5,8 @@ import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
 import { Implementations } from "./pages/Implementations";
 import { ImplementationDetail } from "./pages/ImplementationDetail";
+import { Sessions } from "./pages/Sessions";
+import { SessionDetail } from "./pages/SessionDetail";
 
 export default function App() {
   const { session, loading, signIn, signOut } = useAuth();
@@ -31,6 +33,8 @@ export default function App() {
             path="/implementations/:id"
             element={<ImplementationDetail />}
           />
+          <Route path="/sessions" element={<Sessions />} />
+          <Route path="/sessions/:id" element={<SessionDetail />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

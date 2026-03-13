@@ -161,6 +161,69 @@ export const getStats = (impl?: string, days = 7) => {
   return request<ApiResponse<Stats>>(`/api/admin/stats?${params}`);
 };
 
+// ── Sessions ──
+
+export interface RawFile {
+  filename: string | null;
+  storage_path: string | null;
+  type: "image" | "audio" | "video" | "text" | "clarification_response";
+  content_type: string;
+  size_bytes?: number;
+  body?: string;
+  timestamp: string;
+  public_url?: string;
+}
+
+export interface VisitReport {
+  id: string;
+  session_id: string;
+  implementation: string;
+  visit_type: string;
+  inferred_location: string | null;
+  extracted_data: Record<string, unknown>;
+  confidence_score: number | null;
+  status: string;
+  processing_time_ms: number | null;
+  created_at: string;
+}
+
+export interface Session {
+  id: string;
+  implementation: string;
+  user_phone: string;
+  user_name: string;
+  date: string;
+  status: string;
+  raw_files: RawFile[];
+  segments: unknown;
+  created_at: string;
+  updated_at: string;
+  visit_reports?: VisitReport[];
+}
+
+export const listSessions = (params?: {
+  impl?: string;
+  phone?: string;
+  status?: string;
+  date_from?: string;
+  date_to?: string;
+  limit?: number;
+  offset?: number;
+}) => {
+  const sp = new URLSearchParams();
+  if (params?.impl) sp.set("impl", params.impl);
+  if (params?.phone) sp.set("phone", params.phone);
+  if (params?.status) sp.set("status", params.status);
+  if (params?.date_from) sp.set("date_from", params.date_from);
+  if (params?.date_to) sp.set("date_to", params.date_to);
+  if (params?.limit) sp.set("limit", String(params.limit));
+  if (params?.offset) sp.set("offset", String(params.offset));
+  return request<ApiResponse<Session[]>>(`/api/admin/sessions?${sp}`);
+};
+
+export const getSession = (id: string) =>
+  request<ApiResponse<Session>>(`/api/admin/sessions/${id}`);
+
 // ── Config ──
 
 export const reloadConfig = (implId?: string) => {

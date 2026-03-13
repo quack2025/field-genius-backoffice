@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
   Building2,
+  MessageSquare,
   LogOut,
   RefreshCw,
 } from "lucide-react";
@@ -14,6 +15,7 @@ interface Props {
 const links = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/implementations", label: "Implementaciones", icon: Building2 },
+  { to: "/sessions", label: "Sesiones", icon: MessageSquare },
 ];
 
 export function Sidebar({ onSignOut }: Props) {
