@@ -166,12 +166,18 @@ export const getStats = (impl?: string, days = 7) => {
 export interface RawFile {
   filename: string | null;
   storage_path: string | null;
-  type: "image" | "audio" | "video" | "text" | "clarification_response";
+  type: "image" | "audio" | "video" | "text" | "clarification_response" | "location";
   content_type: string;
   size_bytes?: number;
   body?: string;
   timestamp: string;
   public_url?: string;
+  transcription?: string;
+  image_description?: string;
+  latitude?: number;
+  longitude?: number;
+  address?: string;
+  label?: string;
 }
 
 export interface VisitReport {
@@ -184,7 +190,27 @@ export interface VisitReport {
   confidence_score: number | null;
   status: string;
   processing_time_ms: number | null;
+  strategic_analysis: string | null;
+  sheets_row_id: string | null;
+  gamma_url: string | null;
   created_at: string;
+}
+
+export interface SegmentVisit {
+  id: string;
+  inferred_location: string;
+  visit_type: string;
+  confidence: number;
+  files: string[];
+  time_range: string;
+  reasoning?: string;
+}
+
+export interface SegmentationData {
+  sessions: SegmentVisit[];
+  unassigned_files: string[];
+  needs_clarification: boolean;
+  clarification_message: string;
 }
 
 export interface Session {
@@ -195,7 +221,7 @@ export interface Session {
   date: string;
   status: string;
   raw_files: RawFile[];
-  segments: unknown;
+  segments: SegmentationData | null;
   created_at: string;
   updated_at: string;
   visit_reports?: VisitReport[];
