@@ -274,6 +274,31 @@ export const testVisionPrompt = (imageUrl: string, visionPrompt: string) =>
     }
   );
 
+// ── Report Generation ──
+
+export interface ReportResult {
+  report_id: string | null;
+  chars: number;
+  markdown: string | null;
+}
+
+export interface GenerateReportResponse {
+  session_id: string;
+  report_type?: string;
+  report_id?: string | null;
+  chars?: number;
+  markdown?: string | null;
+  reports?: Record<string, ReportResult>;
+}
+
+export const generateReport = (sessionId: string, reportType: string) =>
+  request<ApiResponse<GenerateReportResponse>>("/api/admin/generate-report", {
+    method: "POST",
+    body: JSON.stringify({ session_id: sessionId, report_type: reportType }),
+  });
+
+// ── Test Endpoints ──
+
 export const testExtraction = (
   text: string,
   schemaJson: Record<string, unknown>
