@@ -3,6 +3,8 @@ import {
   LayoutDashboard,
   Building2,
   MessageSquare,
+  FileBarChart,
+  Users,
   LogOut,
   RefreshCw,
 } from "lucide-react";
@@ -16,6 +18,8 @@ const links = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/implementations", label: "Implementaciones", icon: Building2 },
   { to: "/sessions", label: "Sesiones", icon: MessageSquare },
+  { to: "/reports", label: "Reportes", icon: FileBarChart },
+  { to: "/user-groups", label: "Grupos", icon: Users },
 ];
 
 export function Sidebar({ onSignOut }: Props) {

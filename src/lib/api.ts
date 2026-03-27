@@ -297,6 +297,65 @@ export const generateReport = (sessionId: string, reportType: string) =>
     body: JSON.stringify({ session_id: sessionId, report_type: reportType }),
   });
 
+// ── User Groups ──
+
+export interface UserGroup {
+  id: string;
+  implementation_id: string;
+  name: string;
+  slug: string;
+  zone: string | null;
+  tags: string[];
+  created_at: string;
+}
+
+export const listUserGroups = (impl?: string) => {
+  const params = impl ? `?impl=${impl}` : "";
+  return request<ApiResponse<UserGroup[]>>(`/api/admin/user-groups${params}`);
+};
+
+export const createUserGroup = (implId: string, data: { name: string; slug: string; zone?: string; tags?: string[] }) =>
+  request<ApiResponse<UserGroup>>(`/api/admin/implementations/${implId}/user-groups`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+
+export const addGroupMember = (groupId: string, phone: string) =>
+  request<ApiResponse<User>>(`/api/admin/user-groups/${groupId}/members`, {
+    method: "POST",
+    body: JSON.stringify({ phone }),
+  });
+
+export const removeGroupMember = (groupId: string, phone: string) =>
+  request<ApiResponse<{ removed: boolean }>>(`/api/admin/user-groups/${groupId}/members/${encodeURIComponent(phone)}`, {
+    method: "DELETE",
+  });
+
+// ── Multi-Level Reports ──
+
+export interface MultiLevelReportResponse {
+  markdown: string | null;
+  chars: number;
+  report_id?: string | null;
+  sessions_analyzed?: number;
+  groups_analyzed?: number;
+  total_sessions?: number;
+  group_name?: string;
+  framework?: string;
+}
+
+export const generateGroupReport = (groupId: string, framework: string, dateFrom?: string, dateTo?: string) =>
+  request<ApiResponse<MultiLevelReportResponse>>("/api/admin/generate-group-report", {
+    method: "POST",
+    body: JSON.stringify({ group_id: groupId, framework, date_from: dateFrom, date_to: dateTo }),
+  });
+
+export const generateProjectReport = (implId: string, framework: string, dateFrom?: string, dateTo?: string) =>
+  request<ApiResponse<MultiLevelReportResponse>>("/api/admin/generate-project-report", {
+    method: "POST",
+    body: JSON.stringify({ implementation_id: implId, framework, date_from: dateFrom, date_to: dateTo }),
+  });
+
 // ── Test Endpoints ──
 
 export const testExtraction = (
