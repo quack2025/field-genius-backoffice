@@ -421,13 +421,25 @@ export function UserGroups() {
                   {groupMembers.map((m) => (
                     <li
                       key={m.phone}
-                      className="flex items-center justify-between text-sm py-1 border-b border-gray-100 last:border-0"
+                      className="flex items-center justify-between text-sm py-1.5 border-b border-gray-100 last:border-0"
                     >
                       <div>
-                        <span className="font-medium text-gray-700">
-                          {m.name}
-                        </span>
-                        <span className="text-xs text-gray-400 ml-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-gray-700">
+                            {m.name}
+                          </span>
+                          {m.role && (
+                            <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">
+                              {m.role}
+                            </span>
+                          )}
+                          {m.country && (
+                            <span className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+                              {m.country}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs text-gray-400">
                           {m.phone}
                         </span>
                       </div>

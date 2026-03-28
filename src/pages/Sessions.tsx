@@ -126,6 +126,7 @@ export function Sessions() {
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Fecha</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Usuario</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Impl.</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">Pais</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Estado</th>
                 <th className="text-center px-4 py-3 font-medium text-gray-600">Archivos</th>
               </tr>
@@ -146,6 +147,13 @@ export function Sessions() {
                     </td>
                     <td className="px-4 py-3">
                       <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">{s.implementation}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {s.country ? (
+                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{s.country}</span>
+                      ) : (
+                        <span className="text-xs text-gray-400">--</span>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <span className={`text-xs px-2 py-0.5 rounded ${STATUS_COLORS[s.status] || "bg-gray-100 text-gray-800"}`}>

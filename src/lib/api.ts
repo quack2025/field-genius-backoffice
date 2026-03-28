@@ -112,8 +112,12 @@ export interface User {
   id: string;
   phone: string;
   name: string;
-  role: string;
   implementation: string;
+  implementation_id: string;
+  role: string;
+  country: string;
+  group_id: string | null;
+  tags: string[];
   created_at: string;
 }
 
@@ -124,7 +128,7 @@ export const listUsers = (implId: string) =>
 
 export const assignUser = (
   implId: string,
-  data: { phone: string; name: string; role?: string }
+  data: { phone: string; name: string; role?: string; country?: string }
 ) =>
   request<ApiResponse<User>>(
     `/api/admin/implementations/${implId}/users`,
@@ -136,6 +140,24 @@ export const removeUser = (implId: string, phone: string) =>
     `/api/admin/implementations/${implId}/users/${encodeURIComponent(phone)}`,
     { method: "DELETE" }
   );
+
+// ── Bulk Import ──
+
+export interface BulkImportResult {
+  created: number;
+  updated: number;
+  errors: string[];
+  total_processed: number;
+}
+
+export const bulkImportUsers = (
+  implId: string,
+  users: Array<{ phone: string; name: string; role?: string; country?: string; group_slug?: string }>
+) =>
+  request<ApiResponse<BulkImportResult>>("/api/admin/bulk-import-users", {
+    method: "POST",
+    body: JSON.stringify({ implementation_id: implId, users }),
+  });
 
 // ── Stats ──
 
@@ -220,6 +242,8 @@ export interface Session {
   user_name: string;
   date: string;
   status: string;
+  country?: string;
+  user_role?: string;
   raw_files: RawFile[];
   segments: SegmentationData | null;
   created_at: string;

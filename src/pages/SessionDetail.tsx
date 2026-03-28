@@ -282,7 +282,7 @@ export function SessionDetail() {
       </div>
 
       {/* Info bar */}
-      <div className="bg-white rounded-lg shadow p-4 mb-4 grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+      <div className="bg-white rounded-lg shadow p-4 mb-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 text-sm">
         <div>
           <span className="text-gray-500 block text-xs">Ejecutivo</span>
           <span className="font-medium">{session.user_name}</span>
@@ -290,6 +290,14 @@ export function SessionDetail() {
         <div>
           <span className="text-gray-500 block text-xs">Telefono</span>
           <span className="font-medium">{session.user_phone}</span>
+        </div>
+        <div>
+          <span className="text-gray-500 block text-xs">Rol</span>
+          <span className="font-medium">{session.user_role || "--"}</span>
+        </div>
+        <div>
+          <span className="text-gray-500 block text-xs">Pais</span>
+          <span className="font-medium">{session.country || "--"}</span>
         </div>
         <div>
           <span className="text-gray-500 block text-xs">Archivos</span>
