@@ -7,6 +7,7 @@ import {
   Users,
   LogOut,
   RefreshCw,
+  Zap,
 } from "lucide-react";
 import { reloadConfig } from "../lib/api";
 
@@ -33,44 +34,55 @@ export function Sidebar({ onSignOut }: Props) {
   };
 
   return (
-    <aside className="w-60 bg-brand-500 text-white flex flex-col min-h-screen">
-      <div className="p-4 border-b border-brand-600">
-        <h1 className="text-lg font-bold">Field Genius</h1>
-        <p className="text-xs text-blue-200">Backoffice</p>
+    <aside className="w-64 sidebar-gradient text-white flex flex-col min-h-screen shadow-xl">
+      {/* Brand */}
+      <div className="p-5 border-b border-white/10">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-white/15 flex items-center justify-center">
+            <Zap size={20} className="text-blue-200" />
+          </div>
+          <div>
+            <h1 className="text-base font-display font-bold tracking-tight">Field Genius</h1>
+            <p className="text-[11px] text-blue-300/80 font-medium">Backoffice Admin</p>
+          </div>
+        </div>
       </div>
 
-      <nav className="flex-1 p-2">
+      {/* Navigation */}
+      <nav className="flex-1 p-3 space-y-1">
         {links.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
             to={to}
+            end={to === "/"}
             className={({ isActive }) =>
-              `flex items-center gap-2 px-3 py-2 rounded text-sm ${
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
                 isActive
-                  ? "bg-brand-600 text-white"
-                  : "text-blue-200 hover:bg-brand-600 hover:text-white"
+                  ? "bg-white/15 text-white shadow-sm"
+                  : "text-blue-200/70 hover:bg-white/10 hover:text-white"
               }`
             }
           >
-            <Icon size={18} />
+            <Icon size={18} strokeWidth={1.8} />
             {label}
           </NavLink>
         ))}
       </nav>
 
-      <div className="p-2 border-t border-brand-600 space-y-1">
+      {/* Bottom actions */}
+      <div className="p-3 border-t border-white/10 space-y-1">
         <button
           onClick={handleReload}
-          className="flex items-center gap-2 px-3 py-2 rounded text-sm text-blue-200 hover:bg-brand-600 hover:text-white w-full"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-blue-200/70 hover:bg-white/10 hover:text-white w-full transition-all duration-150"
         >
-          <RefreshCw size={18} />
+          <RefreshCw size={18} strokeWidth={1.8} />
           Recargar config
         </button>
         <button
           onClick={onSignOut}
-          className="flex items-center gap-2 px-3 py-2 rounded text-sm text-blue-200 hover:bg-brand-600 hover:text-white w-full"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-blue-200/70 hover:bg-white/10 hover:text-white w-full transition-all duration-150"
         >
-          <LogOut size={18} />
+          <LogOut size={18} strokeWidth={1.8} />
           Cerrar sesion
         </button>
       </div>

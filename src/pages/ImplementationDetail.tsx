@@ -21,7 +21,6 @@ export function ImplementationDetail() {
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState<Tab>("config");
 
-  // Editable fields
   const [name, setName] = useState("");
   const [industry, setIndustry] = useState("");
   const [country, setCountry] = useState("");
@@ -77,8 +76,18 @@ export function ImplementationDetail() {
     navigate("/implementations");
   };
 
-  if (loading) return <p className="text-gray-500">Cargando...</p>;
-  if (!impl) return <p className="text-red-500">No encontrada</p>;
+  if (loading)
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-3 border-brand-200 border-t-brand-500 rounded-full animate-spin" />
+      </div>
+    );
+  if (!impl)
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl">
+        Implementacion no encontrada
+      </div>
+    );
 
   const tabs: { key: Tab; label: string }[] = [
     { key: "config", label: "Configuracion" },
@@ -88,37 +97,39 @@ export function ImplementationDetail() {
   ];
 
   return (
-    <div>
+    <div className="animate-fade-in">
       <button
         onClick={() => navigate("/implementations")}
-        className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4"
+        className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-brand-500 mb-4 transition-colors"
       >
         <ArrowLeft size={16} /> Volver
       </button>
 
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold text-gray-800">{impl.name}</h2>
-        <div className="flex gap-2">
-          <button
-            onClick={handleDelete}
-            className="flex items-center gap-1 text-red-500 hover:text-red-700 text-sm border border-red-200 px-3 py-1.5 rounded hover:bg-red-50"
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div
+            className="w-10 h-10 rounded-lg flex items-center justify-center"
+            style={{ backgroundColor: impl.primary_color + "20" }}
           >
-            <Trash2 size={14} /> Desactivar
-          </button>
+            <div className="w-4 h-4 rounded-full" style={{ backgroundColor: impl.primary_color }} />
+          </div>
+          <h2 className="text-2xl font-display font-bold text-gray-900">{impl.name}</h2>
         </div>
+        <button
+          onClick={handleDelete}
+          className="flex items-center gap-1.5 text-red-500 hover:text-red-700 text-sm border border-red-200 px-3 py-2 rounded-lg hover:bg-red-50 transition-colors"
+        >
+          <Trash2 size={14} /> Desactivar
+        </button>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b mb-6">
+      <div className="flex border-b border-gray-200 mb-6">
         {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${
-              tab === t.key
-                ? "border-brand-500 text-brand-500"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
+            className={`tab ${tab === t.key ? "tab-active" : "tab-inactive"}`}
           >
             {t.label}
           </button>
@@ -127,22 +138,14 @@ export function ImplementationDetail() {
 
       {/* Tab content */}
       {tab === "config" && (
-        <div className="bg-white rounded-lg shadow p-6 space-y-4">
+        <div className="card p-6 space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field label="Nombre" value={name} onChange={setName} />
             <Field label="Industria" value={industry} onChange={setIndustry} />
             <Field label="Pais" value={country} onChange={setCountry} />
             <Field label="Idioma" value={language} onChange={setLanguage} />
-            <Field
-              label="Color primario"
-              value={primaryColor}
-              onChange={setPrimaryColor}
-            />
-            <Field
-              label="Google Spreadsheet ID"
-              value={spreadsheetId}
-              onChange={setSpreadsheetId}
-            />
+            <Field label="Color primario" value={primaryColor} onChange={setPrimaryColor} />
+            <Field label="Google Spreadsheet ID" value={spreadsheetId} onChange={setSpreadsheetId} />
             <Field
               label="Trigger words (separadas por coma)"
               value={triggerWords}
@@ -150,11 +153,11 @@ export function ImplementationDetail() {
               className="md:col-span-2"
             />
           </div>
-          <div className="flex justify-end">
+          <div className="flex justify-end pt-2">
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-1.5 bg-brand-500 text-white px-5 py-2 rounded text-sm font-medium hover:bg-brand-600 disabled:opacity-50"
+              className="btn-primary flex items-center gap-1.5 disabled:opacity-50"
             >
               <Save size={16} /> {saving ? "Guardando..." : "Guardar"}
             </button>
@@ -182,13 +185,13 @@ function Field({
 }) {
   return (
     <div className={className}>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="block text-sm font-medium text-gray-700 mb-1.5">
         {label}
       </label>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+        className="input"
       />
     </div>
   );

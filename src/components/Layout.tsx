@@ -7,10 +7,12 @@ interface Props {
 
 export function Layout({ onSignOut }: Props) {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-slate-50">
       <Sidebar onSignOut={onSignOut} />
-      <main className="flex-1 p-6 overflow-auto">
-        <Outlet />
+      <main className="flex-1 p-8 overflow-auto">
+        <div className="max-w-7xl mx-auto animate-fade-in">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { MessageSquare } from "lucide-react";
 import { listSessions, listImplementations } from "../lib/api";
 import type { Session, Implementation } from "../lib/api";
 
 const STATUS_COLORS: Record<string, string> = {
-  accumulating: "bg-blue-100 text-blue-800",
-  segmenting: "bg-yellow-100 text-yellow-800",
-  processing: "bg-orange-100 text-orange-800",
-  generating_outputs: "bg-purple-100 text-purple-800",
-  completed: "bg-green-100 text-green-800",
-  needs_clarification: "bg-red-100 text-red-800",
-  failed: "bg-red-100 text-red-800",
+  accumulating: "bg-blue-50 text-blue-700",
+  segmenting: "bg-yellow-50 text-yellow-700",
+  processing: "bg-orange-50 text-orange-700",
+  generating_outputs: "bg-purple-50 text-purple-700",
+  completed: "bg-emerald-50 text-emerald-700",
+  needs_clarification: "bg-red-50 text-red-700",
+  failed: "bg-red-50 text-red-700",
 };
 
 export function Sessions() {
@@ -19,7 +20,6 @@ export function Sessions() {
   const [implementations, setImplementations] = useState<Implementation[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Filters
   const [implFilter, setImplFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [dateFrom, setDateFrom] = useState("");
@@ -60,18 +60,20 @@ export function Sessions() {
   };
 
   return (
-    <div>
-      <h2 className="text-xl font-bold mb-4">Sesiones</h2>
+    <div className="animate-fade-in">
+      <div className="flex items-center gap-3 mb-6">
+        <MessageSquare size={24} className="text-brand-500" />
+        <div>
+          <h2 className="text-2xl font-display font-bold text-gray-900">Sesiones</h2>
+          <p className="text-sm text-gray-500">Capturas de campo por usuario y fecha</p>
+        </div>
+      </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4 mb-4 flex flex-wrap gap-3 items-end">
+      <div className="card p-4 mb-5 flex flex-wrap gap-3 items-end">
         <div>
-          <label className="text-xs font-medium text-gray-500 block mb-1">Implementacion</label>
-          <select
-            value={implFilter}
-            onChange={(e) => setImplFilter(e.target.value)}
-            className="border rounded px-3 py-1.5 text-sm"
-          >
+          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">Implementacion</label>
+          <select value={implFilter} onChange={(e) => setImplFilter(e.target.value)} className="input w-auto">
             <option value="">Todas</option>
             {implementations.map((i) => (
               <option key={i.id} value={i.id}>{i.name}</option>
@@ -79,12 +81,8 @@ export function Sessions() {
           </select>
         </div>
         <div>
-          <label className="text-xs font-medium text-gray-500 block mb-1">Estado</label>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="border rounded px-3 py-1.5 text-sm"
-          >
+          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">Estado</label>
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="input w-auto">
             <option value="">Todos</option>
             <option value="accumulating">Acumulando</option>
             <option value="processing">Procesando</option>
@@ -94,41 +92,35 @@ export function Sessions() {
           </select>
         </div>
         <div>
-          <label className="text-xs font-medium text-gray-500 block mb-1">Desde</label>
-          <input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
-            className="border rounded px-3 py-1.5 text-sm"
-          />
+          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">Desde</label>
+          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="input w-auto" />
         </div>
         <div>
-          <label className="text-xs font-medium text-gray-500 block mb-1">Hasta</label>
-          <input
-            type="date"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
-            className="border rounded px-3 py-1.5 text-sm"
-          />
+          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">Hasta</label>
+          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="input w-auto" />
         </div>
       </div>
 
       {/* Table */}
       {loading ? (
-        <p className="text-gray-500">Cargando...</p>
+        <div className="flex items-center justify-center h-40">
+          <div className="w-8 h-8 border-3 border-brand-200 border-t-brand-500 rounded-full animate-spin" />
+        </div>
       ) : sessions.length === 0 ? (
-        <p className="text-gray-400 text-sm">No hay sesiones con estos filtros.</p>
+        <div className="card p-8 text-center">
+          <p className="text-gray-400 text-sm">No hay sesiones con estos filtros.</p>
+        </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="border-b bg-gray-50">
+        <div className="card overflow-hidden">
+          <table className="w-full text-sm table-pro">
+            <thead>
               <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Fecha</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Usuario</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Impl.</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Pais</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Estado</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-600">Archivos</th>
+                <th>Fecha</th>
+                <th>Usuario</th>
+                <th>Impl.</th>
+                <th>Pais</th>
+                <th>Estado</th>
+                <th className="text-center">Archivos</th>
               </tr>
             </thead>
             <tbody>
@@ -137,30 +129,30 @@ export function Sessions() {
                 return (
                   <tr
                     key={s.id}
-                    className="border-b hover:bg-gray-50 cursor-pointer"
+                    className="cursor-pointer"
                     onClick={() => navigate(`/sessions/${s.id}`)}
                   >
-                    <td className="px-4 py-3">{s.date}</td>
-                    <td className="px-4 py-3">
-                      <div className="font-medium">{s.user_name}</div>
+                    <td className="font-medium text-gray-700">{s.date}</td>
+                    <td>
+                      <div className="font-medium text-gray-800">{s.user_name}</div>
                       <div className="text-xs text-gray-400">{s.user_phone}</div>
                     </td>
-                    <td className="px-4 py-3">
-                      <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">{s.implementation}</span>
+                    <td>
+                      <span className="badge bg-gray-100 text-gray-600">{s.implementation}</span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td>
                       {s.country ? (
-                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{s.country}</span>
+                        <span className="badge bg-gray-100 text-gray-600">{s.country}</span>
                       ) : (
                         <span className="text-xs text-gray-400">--</span>
                       )}
                     </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-xs px-2 py-0.5 rounded ${STATUS_COLORS[s.status] || "bg-gray-100 text-gray-800"}`}>
+                    <td>
+                      <span className={`badge ${STATUS_COLORS[s.status] || "bg-gray-100 text-gray-600"}`}>
                         {s.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="text-center">
                       <div className="flex gap-2 justify-center text-xs text-gray-500">
                         {mc.image > 0 && <span title="Fotos">{mc.image} img</span>}
                         {mc.audio > 0 && <span title="Audios">{mc.audio} aud</span>}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { Plus, Building2, X } from "lucide-react";
 import {
   listImplementations,
   createImplementation,
@@ -41,15 +41,26 @@ export function Implementations() {
     }
   };
 
-  if (loading) return <p className="text-gray-500">Cargando...</p>;
+  if (loading)
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-3 border-brand-200 border-t-brand-500 rounded-full animate-spin" />
+      </div>
+    );
 
   return (
-    <div>
+    <div className="animate-fade-in">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Implementaciones</h2>
+        <div className="flex items-center gap-3">
+          <Building2 size={24} className="text-brand-500" />
+          <div>
+            <h2 className="text-2xl font-display font-bold text-gray-900">Implementaciones</h2>
+            <p className="text-sm text-gray-500">Clientes y configuraciones activas</p>
+          </div>
+        </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-1.5 bg-brand-500 text-white px-4 py-2 rounded text-sm font-medium hover:bg-brand-600"
+          className="btn-primary flex items-center gap-1.5"
         >
           <Plus size={16} />
           Nueva
@@ -57,48 +68,26 @@ export function Implementations() {
       </div>
 
       {showCreate && (
-        <form
-          onSubmit={handleCreate}
-          className="bg-white p-4 rounded-lg shadow mb-6 grid grid-cols-2 md:grid-cols-5 gap-3"
-        >
-          <input
-            name="id"
-            placeholder="ID (slug)"
-            required
-            className="border rounded px-3 py-2 text-sm"
-          />
-          <input
-            name="name"
-            placeholder="Nombre"
-            required
-            className="border rounded px-3 py-2 text-sm"
-          />
-          <input
-            name="industry"
-            placeholder="Industria"
-            className="border rounded px-3 py-2 text-sm"
-          />
-          <input
-            name="country"
-            placeholder="Pais (CO)"
-            className="border rounded px-3 py-2 text-sm"
-          />
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              className="bg-brand-500 text-white px-4 py-2 rounded text-sm hover:bg-brand-600"
-            >
-              Crear
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowCreate(false)}
-              className="border px-4 py-2 rounded text-sm text-gray-600 hover:bg-gray-50"
-            >
-              Cancelar
+        <div className="card p-5 mb-6 animate-fade-in">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-display font-semibold text-gray-800">Nueva implementacion</h3>
+            <button onClick={() => setShowCreate(false)} className="text-gray-400 hover:text-gray-600">
+              <X size={18} />
             </button>
           </div>
-        </form>
+          <form onSubmit={handleCreate} className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <input name="id" placeholder="ID (slug)" required className="input" />
+            <input name="name" placeholder="Nombre" required className="input" />
+            <input name="industry" placeholder="Industria" className="input" />
+            <input name="country" placeholder="Pais (CO)" className="input" />
+            <div className="flex gap-2">
+              <button type="submit" className="btn-primary flex-1">Crear</button>
+              <button type="button" onClick={() => setShowCreate(false)} className="btn-secondary">
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
       )}
 
       <div className="grid gap-3">
@@ -106,25 +95,31 @@ export function Implementations() {
           <div
             key={impl.id}
             onClick={() => navigate(`/implementations/${impl.id}`)}
-            className="bg-white rounded-lg shadow p-4 flex items-center justify-between cursor-pointer hover:shadow-md transition-shadow"
+            className="card p-4 flex items-center justify-between cursor-pointer group"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <div
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: impl.primary_color }}
-              />
+                className="w-10 h-10 rounded-lg flex items-center justify-center shadow-sm"
+                style={{ backgroundColor: impl.primary_color + "20" }}
+              >
+                <div
+                  className="w-4 h-4 rounded-full"
+                  style={{ backgroundColor: impl.primary_color }}
+                />
+              </div>
               <div>
-                <h3 className="font-semibold text-gray-800">{impl.name}</h3>
+                <h3 className="font-semibold text-gray-800 group-hover:text-brand-500 transition-colors">
+                  {impl.name}
+                </h3>
                 <p className="text-xs text-gray-500">
-                  {impl.id} &middot; {impl.industry || "—"} &middot;{" "}
-                  {impl.country}
+                  {impl.id} &middot; {impl.industry || "—"} &middot; {impl.country}
                 </p>
               </div>
             </div>
             <span
-              className={`text-xs px-2 py-1 rounded-full font-medium ${
+              className={`badge ${
                 impl.status === "active"
-                  ? "bg-green-100 text-green-700"
+                  ? "bg-emerald-50 text-emerald-700"
                   : "bg-gray-100 text-gray-500"
               }`}
             >
@@ -133,7 +128,9 @@ export function Implementations() {
           </div>
         ))}
         {items.length === 0 && (
-          <p className="text-gray-400 text-sm">No hay implementaciones aun.</p>
+          <div className="card p-8 text-center">
+            <p className="text-gray-400 text-sm">No hay implementaciones aun.</p>
+          </div>
         )}
       </div>
     </div>

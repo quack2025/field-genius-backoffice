@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { Users, Plus, X } from "lucide-react";
 import {
   listImplementations,
   listUserGroups,
@@ -24,10 +25,8 @@ export function UserGroups() {
   const [loading, setLoading] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(false);
 
-  // Filters
   const [implFilter, setImplFilter] = useState("");
 
-  // Create form
   const [showCreate, setShowCreate] = useState(false);
   const [createName, setCreateName] = useState("");
   const [createSlug, setCreateSlug] = useState("");
@@ -35,12 +34,10 @@ export function UserGroups() {
   const [createTags, setCreateTags] = useState("");
   const [creating, setCreating] = useState(false);
 
-  // Selected group detail
   const [selectedGroup, setSelectedGroup] = useState<UserGroup | null>(null);
   const [groupMembers, setGroupMembers] = useState<User[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
 
-  // Add member form
   const [addPhone, setAddPhone] = useState("");
   const [addingMember, setAddingMember] = useState(false);
   const [removingPhone, setRemovingPhone] = useState("");
@@ -66,7 +63,6 @@ export function UserGroups() {
     loadGroups();
   }, [implFilter]);
 
-  // Load users for selected implementation (for member addition reference)
   useEffect(() => {
     if (!implFilter) {
       setUsers([]);
@@ -79,23 +75,18 @@ export function UserGroups() {
       .finally(() => setLoadingUsers(false));
   }, [implFilter]);
 
-  // Load members when a group is selected
   useEffect(() => {
     if (!selectedGroup) {
       setGroupMembers([]);
       return;
     }
     setLoadingMembers(true);
-    // The members are loaded from the implementation's user list
-    // and cross-referenced with the group. For now, list all users
-    // from the implementation and let the backend handle group membership.
     listUsers(selectedGroup.implementation_id)
       .then((r) => setGroupMembers(r.data))
       .catch(console.error)
       .finally(() => setLoadingMembers(false));
   }, [selectedGroup]);
 
-  // Auto-generate slug from name
   const autoSlug = useMemo(() => slugify(createName), [createName]);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -104,10 +95,7 @@ export function UserGroups() {
 
     setCreating(true);
     try {
-      const tags = createTags
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean);
+      const tags = createTags.split(",").map((t) => t.trim()).filter(Boolean);
       await createUserGroup(implFilter, {
         name: createName.trim(),
         slug: createSlug.trim() || autoSlug,
@@ -135,7 +123,6 @@ export function UserGroups() {
     try {
       await addGroupMember(selectedGroup.id, addPhone.trim());
       setAddPhone("");
-      // Reload members
       const res = await listUsers(selectedGroup.implementation_id);
       setGroupMembers(res.data);
     } catch (e) {
@@ -152,7 +139,6 @@ export function UserGroups() {
     setRemovingPhone(phone);
     try {
       await removeGroupMember(selectedGroup.id, phone);
-      // Reload members
       const res = await listUsers(selectedGroup.implementation_id);
       setGroupMembers(res.data);
     } catch (e) {
@@ -163,22 +149,28 @@ export function UserGroups() {
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold">Grupos de Usuarios</h2>
+    <div className="animate-fade-in">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <Users size={24} className="text-brand-500" />
+          <div>
+            <h2 className="text-2xl font-display font-bold text-gray-900">Grupos de Usuarios</h2>
+            <p className="text-sm text-gray-500">Organiza usuarios por zona y segmento</p>
+          </div>
+        </div>
         {implFilter && (
           <button
             onClick={() => setShowCreate(!showCreate)}
-            className="bg-brand-500 text-white px-4 py-2 rounded text-sm hover:bg-brand-600"
+            className={showCreate ? "btn-secondary flex items-center gap-1.5" : "btn-primary flex items-center gap-1.5"}
           >
-            {showCreate ? "Cancelar" : "Crear Grupo"}
+            {showCreate ? <><X size={16} /> Cancelar</> : <><Plus size={16} /> Crear Grupo</>}
           </button>
         )}
       </div>
 
       {/* Implementation filter */}
-      <div className="bg-white rounded-lg shadow p-4 mb-4">
-        <label className="text-xs font-medium text-gray-500 block mb-1">
+      <div className="card p-4 mb-4">
+        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">
           Implementacion
         </label>
         <select
@@ -188,78 +180,37 @@ export function UserGroups() {
             setSelectedGroup(null);
             setShowCreate(false);
           }}
-          className="border rounded px-3 py-1.5 text-sm min-w-[250px]"
+          className="input w-auto min-w-[250px]"
         >
           <option value="">Todas</option>
           {implementations.map((i) => (
-            <option key={i.id} value={i.id}>
-              {i.name}
-            </option>
+            <option key={i.id} value={i.id}>{i.name}</option>
           ))}
         </select>
       </div>
 
       {/* Create Form */}
       {showCreate && implFilter && (
-        <div className="bg-white rounded-lg shadow p-4 mb-4">
-          <h3 className="font-semibold text-sm text-gray-700 mb-3">
-            Nuevo Grupo
-          </h3>
+        <div className="card p-5 mb-4 animate-fade-in">
+          <h3 className="font-display font-semibold text-sm text-gray-800 mb-3">Nuevo Grupo</h3>
           <form onSubmit={handleCreate} className="flex flex-wrap gap-3 items-end">
             <div>
-              <label className="text-xs font-medium text-gray-500 block mb-1">
-                Nombre *
-              </label>
-              <input
-                type="text"
-                value={createName}
-                onChange={(e) => setCreateName(e.target.value)}
-                placeholder="Zona Norte"
-                className="border rounded px-3 py-1.5 text-sm w-48"
-                required
-              />
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">Nombre *</label>
+              <input type="text" value={createName} onChange={(e) => setCreateName(e.target.value)} placeholder="Zona Norte" className="input w-48" required />
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-500 block mb-1">
-                Slug
-              </label>
-              <input
-                type="text"
-                value={createSlug || autoSlug}
-                onChange={(e) => setCreateSlug(e.target.value)}
-                placeholder="zona_norte"
-                className="border rounded px-3 py-1.5 text-sm w-40 text-gray-600"
-              />
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">Slug</label>
+              <input type="text" value={createSlug || autoSlug} onChange={(e) => setCreateSlug(e.target.value)} placeholder="zona_norte" className="input w-40" />
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-500 block mb-1">
-                Zona
-              </label>
-              <input
-                type="text"
-                value={createZone}
-                onChange={(e) => setCreateZone(e.target.value)}
-                placeholder="Norte"
-                className="border rounded px-3 py-1.5 text-sm w-32"
-              />
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">Zona</label>
+              <input type="text" value={createZone} onChange={(e) => setCreateZone(e.target.value)} placeholder="Norte" className="input w-32" />
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-500 block mb-1">
-                Tags (separados por coma)
-              </label>
-              <input
-                type="text"
-                value={createTags}
-                onChange={(e) => setCreateTags(e.target.value)}
-                placeholder="cemento, ferreteria"
-                className="border rounded px-3 py-1.5 text-sm w-56"
-              />
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">Tags (coma)</label>
+              <input type="text" value={createTags} onChange={(e) => setCreateTags(e.target.value)} placeholder="cemento, ferreteria" className="input w-56" />
             </div>
-            <button
-              type="submit"
-              disabled={creating || !createName.trim()}
-              className="bg-brand-500 text-white px-4 py-1.5 rounded text-sm hover:bg-brand-600 disabled:opacity-50"
-            >
+            <button type="submit" disabled={creating || !createName.trim()} className="btn-primary disabled:opacity-50">
               {creating ? "Creando..." : "Crear"}
             </button>
           </form>
@@ -270,9 +221,11 @@ export function UserGroups() {
         {/* Groups List */}
         <div className="lg:col-span-2">
           {loading ? (
-            <p className="text-gray-500">Cargando...</p>
+            <div className="flex items-center justify-center h-40">
+              <div className="w-8 h-8 border-3 border-brand-200 border-t-brand-500 rounded-full animate-spin" />
+            </div>
           ) : groups.length === 0 ? (
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="card p-8 text-center">
               <p className="text-gray-400 text-sm">
                 {implFilter
                   ? "No hay grupos para esta implementacion."
@@ -280,68 +233,45 @@ export function UserGroups() {
               </p>
             </div>
           ) : (
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-              <table className="w-full text-sm">
-                <thead className="border-b bg-gray-50">
+            <div className="card overflow-hidden">
+              <table className="w-full text-sm table-pro">
+                <thead>
                   <tr>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">
-                      Nombre
-                    </th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">
-                      Slug
-                    </th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">
-                      Zona
-                    </th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">
-                      Tags
-                    </th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">
-                      Creado
-                    </th>
+                    <th>Nombre</th>
+                    <th>Slug</th>
+                    <th>Zona</th>
+                    <th>Tags</th>
+                    <th>Creado</th>
                   </tr>
                 </thead>
                 <tbody>
                   {groups.map((g) => (
                     <tr
                       key={g.id}
-                      className={`border-b hover:bg-gray-50 cursor-pointer ${
-                        selectedGroup?.id === g.id ? "bg-brand-50" : ""
-                      }`}
-                      onClick={() =>
-                        setSelectedGroup(selectedGroup?.id === g.id ? null : g)
-                      }
+                      className={`cursor-pointer ${selectedGroup?.id === g.id ? "!bg-brand-50" : ""}`}
+                      onClick={() => setSelectedGroup(selectedGroup?.id === g.id ? null : g)}
                     >
-                      <td className="px-4 py-3 font-medium">{g.name}</td>
-                      <td className="px-4 py-3">
-                        <span className="font-mono text-xs text-gray-500">
-                          {g.slug}
-                        </span>
+                      <td className="font-semibold text-gray-800">{g.name}</td>
+                      <td>
+                        <span className="font-mono text-xs text-gray-500">{g.slug}</span>
                       </td>
-                      <td className="px-4 py-3">
+                      <td>
                         {g.zone ? (
-                          <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
-                            {g.zone}
-                          </span>
+                          <span className="badge bg-blue-50 text-blue-700">{g.zone}</span>
                         ) : (
                           <span className="text-xs text-gray-400">--</span>
                         )}
                       </td>
-                      <td className="px-4 py-3">
+                      <td>
                         <div className="flex flex-wrap gap-1">
                           {g.tags.length > 0
                             ? g.tags.map((tag) => (
-                                <span
-                                  key={tag}
-                                  className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded"
-                                >
-                                  {tag}
-                                </span>
+                                <span key={tag} className="badge bg-gray-100 text-gray-600">{tag}</span>
                               ))
                             : <span className="text-xs text-gray-400">--</span>}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-xs text-gray-500">
+                      <td className="text-xs text-gray-500">
                         {new Date(g.created_at).toLocaleDateString("es-CO")}
                       </td>
                     </tr>
@@ -355,33 +285,26 @@ export function UserGroups() {
         {/* Group Detail Panel */}
         <div>
           {selectedGroup ? (
-            <div className="bg-white rounded-lg shadow p-4">
-              <h3 className="font-semibold text-sm text-gray-700 mb-1">
-                {selectedGroup.name}
-              </h3>
+            <div className="card p-4">
+              <h3 className="font-display font-semibold text-gray-800 mb-1">{selectedGroup.name}</h3>
               {selectedGroup.zone && (
-                <p className="text-xs text-gray-500 mb-3">
-                  Zona: {selectedGroup.zone}
-                </p>
+                <p className="text-xs text-gray-500 mb-3">Zona: {selectedGroup.zone}</p>
               )}
 
               {/* Add member form */}
-              <form
-                onSubmit={handleAddMember}
-                className="flex gap-2 mb-4"
-              >
+              <form onSubmit={handleAddMember} className="flex gap-2 mb-4">
                 <input
                   type="text"
                   value={addPhone}
                   onChange={(e) => setAddPhone(e.target.value)}
                   placeholder="Telefono (+57...)"
-                  className="border rounded px-3 py-1.5 text-sm flex-1"
+                  className="input flex-1"
                   required
                 />
                 <button
                   type="submit"
                   disabled={addingMember || !addPhone.trim()}
-                  className="bg-brand-500 text-white px-3 py-1.5 rounded text-sm hover:bg-brand-600 disabled:opacity-50 whitespace-nowrap"
+                  className="btn-primary text-xs px-3 py-1.5 disabled:opacity-50 whitespace-nowrap"
                 >
                   {addingMember ? "..." : "Agregar"}
                 </button>
@@ -390,16 +313,14 @@ export function UserGroups() {
               {/* Available users hint */}
               {!loadingUsers && users.length > 0 && (
                 <div className="mb-3">
-                  <p className="text-xs text-gray-500 mb-1">
-                    Usuarios disponibles:
-                  </p>
+                  <p className="text-xs text-gray-500 mb-1">Usuarios disponibles:</p>
                   <div className="max-h-24 overflow-y-auto space-y-0.5">
                     {users.map((u) => (
                       <button
                         key={u.phone}
                         type="button"
                         onClick={() => setAddPhone(u.phone)}
-                        className="block text-xs text-brand-500 hover:text-brand-700 hover:underline"
+                        className="block text-xs text-brand-500 hover:text-brand-700 hover:underline transition-colors"
                       >
                         {u.name} ({u.phone})
                       </button>
@@ -409,11 +330,13 @@ export function UserGroups() {
               )}
 
               {/* Members list */}
-              <h4 className="text-xs font-medium text-gray-500 mb-2">
+              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                 Miembros
               </h4>
               {loadingMembers ? (
-                <p className="text-xs text-gray-400">Cargando...</p>
+                <div className="flex items-center justify-center h-16">
+                  <div className="w-5 h-5 border-2 border-brand-200 border-t-brand-500 rounded-full animate-spin" />
+                </div>
               ) : groupMembers.length === 0 ? (
                 <p className="text-xs text-gray-400">Sin miembros.</p>
               ) : (
@@ -421,32 +344,24 @@ export function UserGroups() {
                   {groupMembers.map((m) => (
                     <li
                       key={m.phone}
-                      className="flex items-center justify-between text-sm py-1.5 border-b border-gray-100 last:border-0"
+                      className="flex items-center justify-between text-sm py-2 border-b border-gray-100 last:border-0"
                     >
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-gray-700">
-                            {m.name}
-                          </span>
+                          <span className="font-medium text-gray-700">{m.name}</span>
                           {m.role && (
-                            <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">
-                              {m.role}
-                            </span>
+                            <span className="badge bg-blue-50 text-blue-700 text-[10px]">{m.role}</span>
                           )}
                           {m.country && (
-                            <span className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
-                              {m.country}
-                            </span>
+                            <span className="badge bg-gray-100 text-gray-600 text-[10px]">{m.country}</span>
                           )}
                         </div>
-                        <span className="text-xs text-gray-400">
-                          {m.phone}
-                        </span>
+                        <span className="text-xs text-gray-400">{m.phone}</span>
                       </div>
                       <button
                         onClick={() => handleRemoveMember(m.phone)}
                         disabled={removingPhone === m.phone}
-                        className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
+                        className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50 transition-colors"
                         title="Remover del grupo"
                       >
                         {removingPhone === m.phone ? "..." : "Remover"}
@@ -457,7 +372,7 @@ export function UserGroups() {
               )}
             </div>
           ) : (
-            <div className="bg-white rounded-lg shadow p-4">
+            <div className="card p-6 text-center">
               <p className="text-sm text-gray-400">
                 Selecciona un grupo para ver sus miembros.
               </p>

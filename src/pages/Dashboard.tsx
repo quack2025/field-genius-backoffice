@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Activity, FileBarChart, TrendingUp } from "lucide-react";
 import { getStats, type Stats } from "../lib/api";
 
 export function Dashboard() {
@@ -14,17 +15,30 @@ export function Dashboard() {
       .finally(() => setLoading(false));
   }, [days]);
 
-  if (loading) return <p className="text-gray-500">Cargando...</p>;
-  if (!stats) return <p className="text-red-500">Error cargando stats</p>;
+  if (loading)
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-3 border-brand-200 border-t-brand-500 rounded-full animate-spin" />
+      </div>
+    );
+  if (!stats)
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl">
+        Error cargando estadisticas
+      </div>
+    );
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
+    <div className="animate-fade-in">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h2 className="text-2xl font-display font-bold text-gray-900">Dashboard</h2>
+          <p className="text-sm text-gray-500 mt-1">Resumen de actividad del sistema</p>
+        </div>
         <select
           value={days}
           onChange={(e) => setDays(Number(e.target.value))}
-          className="border rounded px-3 py-1.5 text-sm"
+          className="input w-auto"
         >
           <option value={7}>Ultimos 7 dias</option>
           <option value={14}>Ultimos 14 dias</option>
@@ -32,12 +46,24 @@ export function Dashboard() {
         </select>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <StatCard label="Sesiones" value={stats.sessions.total} />
-        <StatCard label="Reportes" value={stats.reports.total} />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+        <StatCard
+          label="Sesiones"
+          value={stats.sessions.total}
+          icon={Activity}
+          color="blue"
+        />
+        <StatCard
+          label="Reportes"
+          value={stats.reports.total}
+          icon={FileBarChart}
+          color="emerald"
+        />
         <StatCard
           label="Confianza promedio"
           value={`${(stats.reports.avg_confidence * 100).toFixed(0)}%`}
+          icon={TrendingUp}
+          color="violet"
         />
       </div>
 
@@ -59,17 +85,33 @@ export function Dashboard() {
   );
 }
 
+const COLOR_MAP = {
+  blue: { bg: "bg-blue-50", text: "text-blue-600", icon: "text-blue-500" },
+  emerald: { bg: "bg-emerald-50", text: "text-emerald-600", icon: "text-emerald-500" },
+  violet: { bg: "bg-violet-50", text: "text-violet-600", icon: "text-violet-500" },
+};
+
 function StatCard({
   label,
   value,
+  icon: Icon,
+  color,
 }: {
   label: string;
   value: string | number;
+  icon: typeof Activity;
+  color: keyof typeof COLOR_MAP;
 }) {
+  const c = COLOR_MAP[color];
   return (
-    <div className="bg-white rounded-lg shadow p-5">
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className="text-3xl font-bold text-brand-500 mt-1">{value}</p>
+    <div className="stat-card">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-sm font-medium text-gray-500">{label}</p>
+        <div className={`w-10 h-10 rounded-lg ${c.bg} flex items-center justify-center`}>
+          <Icon size={20} className={c.icon} />
+        </div>
+      </div>
+      <p className={`text-3xl font-display font-bold ${c.text}`}>{value}</p>
     </div>
   );
 }
@@ -82,25 +124,30 @@ function BreakdownCard({
   data: Record<string, number>;
 }) {
   const entries = Object.entries(data).sort(([, a], [, b]) => b - a);
+  const max = entries.length > 0 ? entries[0][1] : 1;
+
   return (
-    <div className="bg-white rounded-lg shadow p-5">
-      <h3 className="font-semibold text-gray-700 mb-3">{title}</h3>
+    <div className="card p-5">
+      <h3 className="font-display font-semibold text-gray-800 mb-4">{title}</h3>
       {entries.length === 0 ? (
         <p className="text-sm text-gray-400">Sin datos</p>
       ) : (
-        <ul className="space-y-2">
+        <div className="space-y-3">
           {entries.map(([key, val]) => (
-            <li
-              key={key}
-              className="flex items-center justify-between text-sm"
-            >
-              <span className="text-gray-600">{key}</span>
-              <span className="font-medium text-gray-800 bg-gray-100 px-2 py-0.5 rounded">
-                {val}
-              </span>
-            </li>
+            <div key={key}>
+              <div className="flex items-center justify-between text-sm mb-1">
+                <span className="text-gray-600 font-medium">{key}</span>
+                <span className="font-semibold text-gray-800">{val}</span>
+              </div>
+              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-brand-400 rounded-full transition-all duration-500"
+                  style={{ width: `${(val / max) * 100}%` }}
+                />
+              </div>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );
