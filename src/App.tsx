@@ -11,7 +11,7 @@ import { Reports } from "./pages/Reports";
 import { UserGroups } from "./pages/UserGroups";
 
 export default function App() {
-  const { session, loading, signIn, signOut } = useAuth();
+  const { session, loading, signIn, signInWithGoogle, signOut } = useAuth();
 
   if (loading) {
     return (
@@ -22,7 +22,7 @@ export default function App() {
   }
 
   if (!session) {
-    return <Login onSignIn={signIn} />;
+    return <Login onSignIn={signIn} onSignInWithGoogle={signInWithGoogle} />;
   }
 
   return (
