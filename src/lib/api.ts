@@ -1,11 +1,23 @@
+import { supabase } from "./supabase";
+
 const API_BASE = import.meta.env.VITE_API_URL as string;
+
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  if (token) {
+    return { Authorization: `Bearer ${token}` };
+  }
+  return {};
+}
 
 async function request<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
+  const authHeaders = await getAuthHeaders();
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json", ...options.headers },
+    headers: { "Content-Type": "application/json", ...authHeaders, ...options.headers },
     ...options,
   });
   if (!res.ok) {
