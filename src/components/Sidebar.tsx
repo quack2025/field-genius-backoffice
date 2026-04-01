@@ -5,6 +5,7 @@ import {
   MessageSquare,
   FileBarChart,
   Users,
+  ClipboardCheck,
   LogOut,
   RefreshCw,
   Zap,
@@ -23,6 +24,7 @@ const links = [
   { to: "/sessions", label: "Sesiones", icon: MessageSquare },
   { to: "/reports", label: "Reportes", icon: FileBarChart },
   { to: "/user-groups", label: "Grupos", icon: Users },
+  { to: "/compliance", label: "Compliance", icon: ClipboardCheck },
 ];
 
 export function Sidebar({ onSignOut, onClose }: Props) {

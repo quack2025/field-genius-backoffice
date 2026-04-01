@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Loader2, CheckCircle } from "lucide-react";
-import { getSession, generateReport } from "../lib/api";
+import { ArrowLeft, Loader2, CheckCircle, Presentation, Copy } from "lucide-react";
+import { getSession, generateReport, listReports, exportGamma } from "../lib/api";
 import type { Session, RawFile, SegmentationData } from "../lib/api";
 import { STATUS_LABELS, STATUS_COLORS } from "../lib/constants";
 import { useToast } from "../hooks/useToast";
@@ -156,13 +156,50 @@ const REPORT_TYPES = [
   { id: "innovation", label: "Innovacion", desc: "Gaps, tendencias, oportunidades", gradient: "from-purple-500 to-purple-700", icon: "💡" },
 ] as const;
 
-function ReportView({ markdown, title, gradient }: { markdown: string; title: string; gradient: string }) {
+function ReportView({
+  markdown,
+  title,
+  gradient,
+  onExportGamma,
+}: {
+  markdown: string;
+  title: string;
+  gradient: string;
+  onExportGamma?: (markdown: string, title: string) => void;
+}) {
   const sections = markdown.split(/^## /m).filter(Boolean);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(markdown);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div className="card overflow-hidden">
-      <div className={`bg-gradient-to-r ${gradient} px-5 py-3`}>
+      <div className={`bg-gradient-to-r ${gradient} px-5 py-3 flex items-center justify-between`}>
         <h3 className="text-white font-display font-semibold text-sm">{title}</h3>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={handleCopy}
+            className="flex items-center gap-1 px-2 py-1 rounded text-[11px] bg-white/20 text-white hover:bg-white/30 transition-colors"
+            title="Copiar markdown"
+          >
+            {copied ? <CheckCircle size={12} /> : <Copy size={12} />}
+            {copied ? "Copiado" : "Copiar"}
+          </button>
+          {onExportGamma && (
+            <button
+              onClick={() => onExportGamma(markdown, title)}
+              className="flex items-center gap-1 px-2 py-1 rounded text-[11px] bg-white/20 text-white hover:bg-white/30 transition-colors"
+              title="Exportar a Gamma (presentacion)"
+            >
+              <Presentation size={12} />
+              Gamma
+            </button>
+          )}
+        </div>
       </div>
       <div className="p-5 space-y-4 max-h-[700px] overflow-y-auto">
         {sections.map((section, i) => {
@@ -220,12 +257,27 @@ export function SessionDetail() {
   const [generating, setGenerating] = useState<Record<string, boolean>>({});
   const [genStartTimes, setGenStartTimes] = useState<Record<string, number>>({});
   const [justCompleted, setJustCompleted] = useState<Record<string, boolean>>({});
-
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    getSession(id)
-      .then((r) => setSession(r.data))
+    // Load session + any previously saved reports in parallel
+    Promise.all([
+      getSession(id),
+      listReports({ session_id: id }).catch(() => ({ data: [] })),
+    ])
+      .then(([sessionResp, reportsResp]) => {
+        setSession(sessionResp.data);
+        // Hydrate saved reports into state so they persist across navigation
+        const saved: Record<string, string> = {};
+        for (const r of reportsResp.data || []) {
+          if (r.analysis_markdown && r.framework) {
+            saved[r.framework] = r.analysis_markdown;
+          }
+        }
+        if (Object.keys(saved).length > 0) {
+          setGeneratedReports(saved);
+        }
+      })
       .catch((e) => toast({ type: "error", message: e instanceof Error ? e.message : "Error cargando sesion" }))
       .finally(() => setLoading(false));
   }, [id]);
@@ -254,6 +306,21 @@ export function SessionDetail() {
       toast({ type: "error", message: "Error generando reporte: " + (e instanceof Error ? e.message : "desconocido") });
     } finally {
       setGenerating((g) => ({ ...g, [reportType]: false }));
+    }
+  };
+
+  const handleExportGamma = async (markdown: string, title: string) => {
+    try {
+      const resp = await exportGamma({ markdown, title });
+      if (resp.data.url) {
+        window.open(resp.data.url, "_blank");
+        toast({ type: "success", message: "Presentacion creada en Gamma" });
+      } else if (resp.data.gamma_content) {
+        await navigator.clipboard.writeText(resp.data.gamma_content);
+        toast({ type: "success", message: "Contenido copiado — pegalo en gamma.app/create" });
+      }
+    } catch (e) {
+      toast({ type: "error", message: "Error exportando: " + (e instanceof Error ? e.message : "desconocido") });
     }
   };
 
@@ -394,7 +461,15 @@ export function SessionDetail() {
           {REPORT_TYPES.map((rt) => {
             const md = generatedReports[rt.id];
             if (!md) return null;
-            return <ReportView key={rt.id} markdown={md} title={rt.label} gradient={rt.gradient} />;
+            return (
+              <ReportView
+                key={rt.id}
+                markdown={md}
+                title={rt.label}
+                gradient={rt.gradient}
+                onExportGamma={handleExportGamma}
+              />
+            );
           })}
         </div>
       )}

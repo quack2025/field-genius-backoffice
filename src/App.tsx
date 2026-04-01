@@ -10,6 +10,7 @@ import { Sessions } from "./pages/Sessions";
 import { SessionDetail } from "./pages/SessionDetail";
 import { Reports } from "./pages/Reports";
 import { UserGroups } from "./pages/UserGroups";
+import { Compliance } from "./pages/Compliance";
 
 export default function App() {
   const { session, loading, signIn, signInWithGoogle, signOut } = useAuth();
@@ -45,6 +46,7 @@ export default function App() {
           <Route path="/sessions/:id" element={<SessionDetail />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/user-groups" element={<UserGroups />} />
+          <Route path="/compliance" element={<Compliance />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

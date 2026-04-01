@@ -397,6 +397,102 @@ export const generateProjectReport = (implId: string, framework: string, dateFro
     body: JSON.stringify({ implementation_id: implId, framework, date_from: dateFrom, date_to: dateTo }),
   });
 
+// ── Report Persistence ──
+
+export interface SavedReport {
+  id: string;
+  implementation_id: string;
+  title: string;
+  framework: string;
+  filters: Record<string, string>;
+  status: string;
+  created_at: string;
+  analysis_markdown: string;
+}
+
+export const listReports = (params: {
+  session_id?: string;
+  implementation_id?: string;
+  framework?: string;
+  limit?: number;
+}) => {
+  const qs = new URLSearchParams();
+  if (params.session_id) qs.set("session_id", params.session_id);
+  if (params.implementation_id) qs.set("implementation_id", params.implementation_id);
+  if (params.framework) qs.set("framework", params.framework);
+  if (params.limit) qs.set("limit", String(params.limit));
+  return request<ApiResponse<SavedReport[]>>(`/api/admin/reports?${qs.toString()}`);
+};
+
+// ── Export to Gamma ──
+
+export interface GammaExportResponse {
+  mode: "api" | "prompt";
+  gamma_content: string;
+  title: string;
+  url: string | null;
+}
+
+export const exportGamma = (data: { report_id?: string; markdown?: string; title?: string }) =>
+  request<ApiResponse<GammaExportResponse>>("/api/admin/export-gamma", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+
+// ── Export to Google Sheets ──
+
+export interface SheetsExportResponse {
+  spreadsheet_id: string;
+  spreadsheet_url: string;
+  tabs_written: string[];
+}
+
+export const exportSheets = (data: {
+  implementation_id: string;
+  date_from?: string;
+  date_to?: string;
+  include_facts?: boolean;
+  include_compliance?: boolean;
+}) =>
+  request<ApiResponse<SheetsExportResponse>>("/api/admin/export-sheets", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+
+// ── Compliance ──
+
+export interface ComplianceUser {
+  Ejecutivo: string;
+  Telefono: string;
+  Rol: string;
+  Sesiones: string;
+  Completadas: string;
+  Archivos: string;
+  Imagenes: string;
+  Audios: string;
+  "Dias Activos": string;
+  "Primera Sesion": string;
+  "Ultima Sesion": string;
+  Estado: string;
+}
+
+export interface ComplianceResponse {
+  users: ComplianceUser[];
+  summary: {
+    total: number;
+    active: number;
+    inactive: number;
+    compliance_rate: number;
+  };
+}
+
+export const getCompliance = (implId: string, dateFrom?: string, dateTo?: string) => {
+  const qs = new URLSearchParams({ implementation_id: implId });
+  if (dateFrom) qs.set("date_from", dateFrom);
+  if (dateTo) qs.set("date_to", dateTo);
+  return request<ApiResponse<ComplianceResponse>>(`/api/admin/compliance?${qs.toString()}`);
+};
+
 // ── Test Endpoints ──
 
 export const testExtraction = (
