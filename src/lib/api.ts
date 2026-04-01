@@ -3,10 +3,15 @@ import { supabase } from "./supabase";
 const API_BASE = import.meta.env.VITE_API_URL as string;
 
 async function getAuthHeaders(): Promise<Record<string, string>> {
-  const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token;
-  if (token) {
-    return { Authorization: `Bearer ${token}` };
+  try {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    if (token) {
+      return { Authorization: `Bearer ${token}` };
+    }
+    console.warn("[api] No auth token available — session may not be active");
+  } catch (e) {
+    console.error("[api] Failed to get auth session:", e);
   }
   return {};
 }
