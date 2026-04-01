@@ -1,18 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2, CheckCircle } from "lucide-react";
 import { getSession, generateReport } from "../lib/api";
 import type { Session, RawFile, SegmentationData } from "../lib/api";
+import { STATUS_LABELS, STATUS_COLORS } from "../lib/constants";
+import { useToast } from "../hooks/useToast";
 
-const STATUS_COLORS: Record<string, string> = {
-  accumulating: "bg-blue-50 text-blue-700",
-  segmenting: "bg-yellow-50 text-yellow-700",
-  processing: "bg-orange-50 text-orange-700",
-  generating_outputs: "bg-purple-50 text-purple-700",
-  completed: "bg-emerald-50 text-emerald-700",
-  needs_clarification: "bg-red-50 text-red-700",
-  failed: "bg-red-50 text-red-700",
-};
 
 function buildSegmentMaps(segments: SegmentationData | null) {
   const transcriptions: Record<string, string> = {};
@@ -194,26 +187,53 @@ function ReportView({ markdown, title, gradient }: { markdown: string; title: st
 
 void 0;
 
+/** Progress indicator for report generation */
+function GeneratingProgress({ framework, startTime }: { framework: string; startTime: number }) {
+  const [elapsed, setElapsed] = useState(0);
+  const steps = ["Analizando observaciones...", "Evaluando datos de campo...", "Generando reporte..."];
+  const stepIdx = elapsed < 10 ? 0 : elapsed < 30 ? 1 : 2;
+
+  useEffect(() => {
+    const iv = setInterval(() => setElapsed(Math.floor((Date.now() - startTime) / 1000)), 1000);
+    return () => clearInterval(iv);
+  }, [startTime]);
+
+  return (
+    <div className="flex items-center gap-3 px-4 py-3 bg-brand-50 border border-brand-200 rounded-lg animate-fade-in">
+      <Loader2 size={18} className="text-brand-500 animate-spin" />
+      <div className="flex-1">
+        <p className="text-sm font-medium text-brand-700">{framework}</p>
+        <p className="text-xs text-brand-500">{steps[stepIdx]}</p>
+      </div>
+      <span className="text-xs text-brand-400 tabular-nums">{elapsed}s</span>
+    </div>
+  );
+}
+
 export function SessionDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [generatedReports, setGeneratedReports] = useState<Record<string, string>>({});
   const [generating, setGenerating] = useState<Record<string, boolean>>({});
+  const [genStartTimes, setGenStartTimes] = useState<Record<string, number>>({});
+  const [justCompleted, setJustCompleted] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
     getSession(id)
       .then((r) => setSession(r.data))
-      .catch(console.error)
+      .catch((e) => toast({ type: "error", message: e instanceof Error ? e.message : "Error cargando sesion" }))
       .finally(() => setLoading(false));
   }, [id]);
 
   const handleGenerate = async (reportType: string) => {
     if (!id || generating[reportType]) return;
     setGenerating((g) => ({ ...g, [reportType]: true }));
+    setGenStartTimes((s) => ({ ...s, [reportType]: Date.now() }));
     try {
       const resp = await generateReport(id, reportType);
       if (reportType === "all" && resp.data.reports) {
@@ -222,11 +242,16 @@ export function SessionDetail() {
           if (result.markdown) newReports[type] = result.markdown;
         }
         setGeneratedReports((prev) => ({ ...prev, ...newReports }));
+        toast({ type: "success", message: `${Object.keys(newReports).length} reportes generados` });
       } else if (resp.data.markdown) {
         setGeneratedReports((prev) => ({ ...prev, [reportType]: resp.data.markdown! }));
+        toast({ type: "success", message: "Reporte generado" });
       }
+      // Brief checkmark animation
+      setJustCompleted((c) => ({ ...c, [reportType]: true }));
+      setTimeout(() => setJustCompleted((c) => ({ ...c, [reportType]: false })), 2000);
     } catch (e) {
-      console.error("Report generation failed:", e);
+      toast({ type: "error", message: "Error generando reporte: " + (e instanceof Error ? e.message : "desconocido") });
     } finally {
       setGenerating((g) => ({ ...g, [reportType]: false }));
     }
@@ -283,7 +308,7 @@ export function SessionDetail() {
           {session.user_name} &mdash; {session.date}
         </h2>
         <span className={`badge ${STATUS_COLORS[session.status] || "bg-gray-100"}`}>
-          {session.status}
+          {STATUS_LABELS[session.status] || session.status}
         </span>
       </div>
 
@@ -329,10 +354,10 @@ export function SessionDetail() {
               <div className="flex items-center gap-2 mb-1.5">
                 <span className="text-xl">{rt.icon}</span>
                 <span className="font-semibold text-sm text-gray-800">{rt.label}</span>
-                {generating[rt.id] && (
-                  <span className="text-xs text-brand-500 animate-pulse font-medium">Generando...</span>
+                {justCompleted[rt.id] && !generating[rt.id] && (
+                  <CheckCircle size={16} className="text-emerald-500" />
                 )}
-                {generatedReports[rt.id] && !generating[rt.id] && (
+                {generatedReports[rt.id] && !generating[rt.id] && !justCompleted[rt.id] && (
                   <span className="badge bg-emerald-50 text-emerald-700 text-[10px]">Listo</span>
                 )}
               </div>
@@ -346,6 +371,22 @@ export function SessionDetail() {
           </p>
         )}
       </div>
+
+      {/* Progress indicators for active generations */}
+      {isGeneratingAny && (
+        <div className="mb-4 space-y-2">
+          {REPORT_TYPES.filter((rt) => generating[rt.id]).map((rt) => (
+            <GeneratingProgress
+              key={rt.id}
+              framework={rt.label}
+              startTime={genStartTimes[rt.id] || Date.now()}
+            />
+          ))}
+          {generating["all"] && (
+            <GeneratingProgress framework="Generando los 3 reportes" startTime={genStartTimes["all"] || Date.now()} />
+          )}
+        </div>
+      )}
 
       {/* Generated Reports */}
       {Object.keys(generatedReports).length > 0 && (

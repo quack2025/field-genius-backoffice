@@ -10,9 +10,11 @@ import {
   Zap,
 } from "lucide-react";
 import { reloadConfig } from "../lib/api";
+import { useToast } from "../hooks/useToast";
 
 interface Props {
   onSignOut: () => void;
+  onClose?: () => void;
 }
 
 const links = [
@@ -23,13 +25,14 @@ const links = [
   { to: "/user-groups", label: "Grupos", icon: Users },
 ];
 
-export function Sidebar({ onSignOut }: Props) {
+export function Sidebar({ onSignOut, onClose }: Props) {
+  const { toast } = useToast();
   const handleReload = async () => {
     try {
       await reloadConfig();
-      alert("Cache recargado");
+      toast({ type: "success", message: "Cache recargado" });
     } catch (e: unknown) {
-      alert("Error: " + (e instanceof Error ? e.message : String(e)));
+      toast({ type: "error", message: "Error: " + (e instanceof Error ? e.message : String(e)) });
     }
   };
 
@@ -55,6 +58,7 @@ export function Sidebar({ onSignOut }: Props) {
             key={to}
             to={to}
             end={to === "/"}
+            onClick={onClose}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
                 isActive

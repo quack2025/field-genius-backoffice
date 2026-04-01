@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
+import { ToastProvider } from "./components/Toast";
 import { Layout } from "./components/Layout";
 import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
@@ -22,10 +23,15 @@ export default function App() {
   }
 
   if (!session) {
-    return <Login onSignIn={signIn} onSignInWithGoogle={signInWithGoogle} />;
+    return (
+      <ToastProvider>
+        <Login onSignIn={signIn} onSignInWithGoogle={signInWithGoogle} />
+      </ToastProvider>
+    );
   }
 
   return (
+    <ToastProvider>
     <BrowserRouter>
       <Routes>
         <Route element={<Layout onSignOut={signOut} />}>
@@ -43,5 +49,6 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
+    </ToastProvider>
   );
 }

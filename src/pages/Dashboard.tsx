@@ -1,19 +1,24 @@
 import { useEffect, useState } from "react";
-import { Activity, FileBarChart, TrendingUp } from "lucide-react";
-import { getStats, type Stats } from "../lib/api";
+import { Activity, FileBarChart, TrendingUp, RefreshCw } from "lucide-react";
+import { getStats } from "../lib/api";
+import type { Stats } from "../lib/api";
 
 export function Dashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [days, setDays] = useState(7);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
+  const load = () => {
     setLoading(true);
+    setError("");
     getStats(undefined, days)
       .then((r) => setStats(r.data))
-      .catch(console.error)
+      .catch((e) => setError(e instanceof Error ? e.message : "Error cargando estadisticas"))
       .finally(() => setLoading(false));
-  }, [days]);
+  };
+
+  useEffect(() => { load(); }, [days]);
 
   if (loading)
     return (
@@ -21,12 +26,16 @@ export function Dashboard() {
         <div className="w-8 h-8 border-3 border-brand-200 border-t-brand-500 rounded-full animate-spin" />
       </div>
     );
-  if (!stats)
+  if (error)
     return (
-      <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl">
-        Error cargando estadisticas
+      <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl flex items-center justify-between">
+        <span className="text-sm">{error}</span>
+        <button onClick={load} className="flex items-center gap-1 text-sm font-medium hover:underline">
+          <RefreshCw size={14} /> Reintentar
+        </button>
       </div>
     );
+  if (!stats) return null;
 
   return (
     <div className="animate-fade-in">

@@ -1,24 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, RefreshCw } from "lucide-react";
 import { listSessions, listImplementations } from "../lib/api";
 import type { Session, Implementation } from "../lib/api";
-
-const STATUS_COLORS: Record<string, string> = {
-  accumulating: "bg-blue-50 text-blue-700",
-  segmenting: "bg-yellow-50 text-yellow-700",
-  processing: "bg-orange-50 text-orange-700",
-  generating_outputs: "bg-purple-50 text-purple-700",
-  completed: "bg-emerald-50 text-emerald-700",
-  needs_clarification: "bg-red-50 text-red-700",
-  failed: "bg-red-50 text-red-700",
-};
+import { STATUS_LABELS, STATUS_COLORS } from "../lib/constants";
 
 export function Sessions() {
   const navigate = useNavigate();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [implementations, setImplementations] = useState<Implementation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const [implFilter, setImplFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -27,6 +19,7 @@ export function Sessions() {
 
   const load = async () => {
     setLoading(true);
+    setError("");
     try {
       const res = await listSessions({
         impl: implFilter || undefined,
@@ -37,7 +30,7 @@ export function Sessions() {
       });
       setSessions(res.data);
     } catch (e) {
-      console.error(e);
+      setError(e instanceof Error ? e.message : "Error cargando sesiones");
     }
     setLoading(false);
   };
@@ -101,6 +94,16 @@ export function Sessions() {
         </div>
       </div>
 
+      {/* Error banner */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-5 flex items-center justify-between">
+          <span className="text-sm">{error}</span>
+          <button onClick={load} className="flex items-center gap-1 text-sm font-medium hover:underline">
+            <RefreshCw size={14} /> Reintentar
+          </button>
+        </div>
+      )}
+
       {/* Table */}
       {loading ? (
         <div className="flex items-center justify-center h-40">
@@ -149,7 +152,7 @@ export function Sessions() {
                     </td>
                     <td>
                       <span className={`badge ${STATUS_COLORS[s.status] || "bg-gray-100 text-gray-600"}`}>
-                        {s.status}
+                        {STATUS_LABELS[s.status] || s.status}
                       </span>
                     </td>
                     <td className="text-center">
