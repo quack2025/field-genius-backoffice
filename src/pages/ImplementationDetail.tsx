@@ -28,6 +28,9 @@ export function ImplementationDetail() {
   const [primaryColor, setPrimaryColor] = useState("");
   const [spreadsheetId, setSpreadsheetId] = useState("");
   const [triggerWords, setTriggerWords] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [accessMode, setAccessMode] = useState("open");
+  const [visionStrategy, setVisionStrategy] = useState("tiered");
 
   useEffect(() => {
     if (!id) return;
@@ -43,6 +46,9 @@ export function ImplementationDetail() {
         setPrimaryColor(d.primary_color);
         setSpreadsheetId(d.google_spreadsheet_id || "");
         setTriggerWords(d.trigger_words.join(", "));
+        setWhatsappNumber(d.whatsapp_number || "");
+        setAccessMode(d.access_mode || "open");
+        setVisionStrategy(d.vision_strategy || "tiered");
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -60,6 +66,9 @@ export function ImplementationDetail() {
         primary_color: primaryColor,
         google_spreadsheet_id: spreadsheetId || null,
         trigger_words: triggerWords.split(",").map((w) => w.trim()).filter(Boolean),
+        whatsapp_number: whatsappNumber || null,
+        access_mode: accessMode,
+        vision_strategy: visionStrategy,
       });
       alert("Guardado");
     } catch (err: unknown) {
@@ -138,21 +147,77 @@ export function ImplementationDetail() {
 
       {/* Tab content */}
       {tab === "config" && (
-        <div className="card p-6 space-y-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Nombre" value={name} onChange={setName} />
-            <Field label="Industria" value={industry} onChange={setIndustry} />
-            <Field label="Pais" value={country} onChange={setCountry} />
-            <Field label="Idioma" value={language} onChange={setLanguage} />
-            <Field label="Color primario" value={primaryColor} onChange={setPrimaryColor} />
-            <Field label="Google Spreadsheet ID" value={spreadsheetId} onChange={setSpreadsheetId} />
-            <Field
-              label="Trigger words (separadas por coma)"
-              value={triggerWords}
-              onChange={setTriggerWords}
-              className="md:col-span-2"
-            />
+        <div className="space-y-5">
+          {/* General */}
+          <div className="card p-6 space-y-5">
+            <h3 className="font-display font-semibold text-gray-800 text-sm">General</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Nombre" value={name} onChange={setName} />
+              <Field label="Industria" value={industry} onChange={setIndustry} />
+              <Field label="Pais" value={country} onChange={setCountry} />
+              <Field label="Idioma" value={language} onChange={setLanguage} />
+              <Field label="Color primario" value={primaryColor} onChange={setPrimaryColor} />
+              <Field label="Google Spreadsheet ID" value={spreadsheetId} onChange={setSpreadsheetId} />
+              <Field
+                label="Trigger words (separadas por coma)"
+                value={triggerWords}
+                onChange={setTriggerWords}
+                className="md:col-span-2"
+              />
+            </div>
           </div>
+
+          {/* WhatsApp & Access Control */}
+          <div className="card p-6 space-y-5">
+            <h3 className="font-display font-semibold text-gray-800 text-sm">WhatsApp y Control de Acceso</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field
+                label="Numero WhatsApp (formato: whatsapp:+1XXXXXXXXXX)"
+                value={whatsappNumber}
+                onChange={setWhatsappNumber}
+              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Modo de acceso</label>
+                <select
+                  value={accessMode}
+                  onChange={(e) => setAccessMode(e.target.value)}
+                  className="input"
+                >
+                  <option value="open">Abierto (cualquiera puede usar)</option>
+                  <option value="whitelist">Whitelist (solo usuarios registrados)</option>
+                </select>
+                <p className="text-xs text-gray-400 mt-1">
+                  {accessMode === "whitelist"
+                    ? "Solo usuarios en la lista pueden enviar mensajes. Otros reciben aviso de rechazo."
+                    : "Cualquier numero puede enviar mensajes y seran procesados."}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Configuration */}
+          <div className="card p-6 space-y-5">
+            <h3 className="font-display font-semibold text-gray-800 text-sm">Configuracion AI</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Vision Strategy</label>
+                <select
+                  value={visionStrategy}
+                  onChange={(e) => setVisionStrategy(e.target.value)}
+                  className="input"
+                >
+                  <option value="tiered">Tiered (Haiku primero, Sonnet si necesario)</option>
+                  <option value="sonnet_only">Solo Sonnet (maxima calidad, mayor costo)</option>
+                </select>
+                <p className="text-xs text-gray-400 mt-1">
+                  {visionStrategy === "tiered"
+                    ? "Haiku analiza primero (~$0.006/foto). Solo escala a Sonnet si la descripcion es insuficiente."
+                    : "Todas las fotos se analizan con Sonnet (~$0.02/foto). Mejor calidad, ~3x mas costo."}
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="flex justify-end pt-2">
             <button
               onClick={handleSave}

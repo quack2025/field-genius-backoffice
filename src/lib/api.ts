@@ -54,6 +54,9 @@ export interface Implementation {
   status: string;
   created_at: string;
   updated_at: string;
+  whatsapp_number?: string | null;
+  access_mode?: string;
+  vision_strategy?: string;
 }
 
 export const listImplementations = () =>
