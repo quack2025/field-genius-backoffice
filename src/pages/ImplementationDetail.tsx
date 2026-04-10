@@ -36,6 +36,9 @@ export function ImplementationDetail() {
   const [rejectionMessage, setRejectionMessage] = useState("");
   const [firstPhotoHint, setFirstPhotoHint] = useState("");
   const [requireTerms, setRequireTerms] = useState(false);
+  const [digestEnabled, setDigestEnabled] = useState(false);
+  const [digestEmails, setDigestEmails] = useState("");
+  const [digestFrequency, setDigestFrequency] = useState("daily");
 
   useEffect(() => {
     if (!id) return;
@@ -60,6 +63,10 @@ export function ImplementationDetail() {
         setRejectionMessage(String(ob.rejection_message || ""));
         setFirstPhotoHint(String(ob.first_photo_hint || ""));
         setRequireTerms(Boolean(ob.require_terms));
+        const dg = (ob.digest || {}) as Record<string, unknown>;
+        setDigestEnabled(Boolean(dg.enabled));
+        setDigestEmails(Array.isArray(dg.emails) ? (dg.emails as string[]).join(", ") : String(dg.emails || ""));
+        setDigestFrequency(String(dg.frequency || "daily"));
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -86,6 +93,11 @@ export function ImplementationDetail() {
           rejection_message: rejectionMessage || undefined,
           first_photo_hint: firstPhotoHint || undefined,
           require_terms: requireTerms,
+          digest: {
+            enabled: digestEnabled,
+            emails: digestEmails.split(",").map((e: string) => e.trim()).filter(Boolean),
+            frequency: digestFrequency,
+          },
         },
       });
       alert("Guardado");
@@ -282,6 +294,46 @@ export function ImplementationDetail() {
                 hint="Usa {count} para el numero de archivos. Se envia cada vez que recibe una foto/audio."
               />
             </div>
+          </div>
+
+          {/* Digest Email */}
+          <div className="card p-6 space-y-5">
+            <div className="flex items-center justify-between">
+              <h3 className="font-display font-semibold text-gray-800 text-sm">Resumen por Email (Digest)</h3>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={digestEnabled}
+                  onChange={(e) => setDigestEnabled(e.target.checked)}
+                  className="rounded border-gray-300"
+                />
+                Activar digest
+              </label>
+            </div>
+            {digestEnabled && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field
+                  label="Correos destinatarios (separados por coma)"
+                  value={digestEmails}
+                  onChange={setDigestEmails}
+                  className="md:col-span-2"
+                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Frecuencia</label>
+                  <select
+                    value={digestFrequency}
+                    onChange={(e) => setDigestFrequency(e.target.value)}
+                    className="input"
+                  >
+                    <option value="daily">Diario (7pm)</option>
+                    <option value="weekly">Semanal (viernes 7pm)</option>
+                  </select>
+                </div>
+              </div>
+            )}
+            {!digestEnabled && (
+              <p className="text-xs text-gray-400">Activa el digest para enviar un resumen periodico por email con la actividad de campo.</p>
+            )}
           </div>
 
           <div className="flex justify-end pt-2">
