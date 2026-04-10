@@ -119,13 +119,28 @@ export function Implementations() {
             <p className="text-sm text-gray-500">Clientes y configuraciones activas</p>
           </div>
         </div>
-        <button
-          onClick={() => setShowCreate(true)}
-          className="btn-primary flex items-center gap-1.5"
-        >
-          <Plus size={16} />
-          Nuevo proyecto
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              const name = prompt("Nombre de la carpeta:");
+              if (name?.trim()) {
+                setOpenFolders((prev) => new Set([...prev, name.trim()]));
+                toast({ type: "success", message: `Carpeta "${name.trim()}" creada. Arrastra proyectos para organizarlos.` });
+              }
+            }}
+            className="btn-secondary flex items-center gap-1.5"
+          >
+            <Folder size={16} />
+            Nueva carpeta
+          </button>
+          <button
+            onClick={() => setShowCreate(true)}
+            className="btn-primary flex items-center gap-1.5"
+          >
+            <Plus size={16} />
+            Nuevo proyecto
+          </button>
+        </div>
       </div>
 
       {showCreate && (
