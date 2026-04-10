@@ -171,7 +171,7 @@ export function UserGroups() {
       {/* Implementation filter */}
       <div className="card p-4 mb-4">
         <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">
-          Implementacion
+          Proyecto
         </label>
         <select
           value={implFilter}
@@ -228,8 +228,8 @@ export function UserGroups() {
             <div className="card p-8 text-center">
               <p className="text-gray-400 text-sm">
                 {implFilter
-                  ? "No hay grupos para esta implementacion."
-                  : "Selecciona una implementacion para ver sus grupos."}
+                  ? "No hay grupos para este proyecto."
+                  : "Selecciona un proyecto para ver sus grupos."}
               </p>
             </div>
           ) : (

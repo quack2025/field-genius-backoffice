@@ -82,7 +82,7 @@ export function Dashboard() {
           data={stats.sessions.by_status}
         />
         <BreakdownCard
-          title="Sesiones por implementacion"
+          title="Sesiones por proyecto"
           data={stats.sessions.by_implementation}
         />
         <BreakdownCard

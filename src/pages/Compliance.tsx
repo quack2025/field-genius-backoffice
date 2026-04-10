@@ -92,7 +92,7 @@ export function Compliance() {
       {/* Filters */}
       <div className="card p-4 mb-5 flex flex-wrap gap-4 items-end">
         <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">Implementacion</label>
+          <label className="block text-xs font-medium text-gray-500 mb-1">Proyecto</label>
           <select
             value={selectedImpl}
             onChange={(e) => setSelectedImpl(e.target.value)}
@@ -140,7 +140,7 @@ export function Compliance() {
         </div>
       ) : users.length === 0 ? (
         <div className="card p-8 text-center text-gray-400 text-sm">
-          No hay datos de usuarios para esta implementacion.
+          No hay datos de usuarios para este proyecto.
         </div>
       ) : (
         <div className="card overflow-hidden">

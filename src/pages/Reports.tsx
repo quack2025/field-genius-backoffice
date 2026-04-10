@@ -154,7 +154,7 @@ export function Reports() {
       return;
     }
     if (activeTab === "proyecto" && !selectedImpl) {
-      setError("Selecciona una implementacion.");
+      setError("Selecciona un proyecto.");
       return;
     }
 
@@ -239,7 +239,7 @@ export function Reports() {
             <div className="flex flex-wrap gap-4 items-end">
               <div>
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">
-                  Implementacion
+                  Proyecto
                 </label>
                 <select
                   value={selectedImpl}
@@ -268,7 +268,7 @@ export function Reports() {
                       {loadingGroups
                         ? "Cargando..."
                         : !selectedImpl
-                          ? "Selecciona implementacion"
+                          ? "Selecciona proyecto"
                           : groups.length === 0
                             ? "Sin grupos"
                             : "Seleccionar..."}

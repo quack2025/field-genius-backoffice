@@ -20,7 +20,7 @@ interface Props {
 
 const links = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/implementations", label: "Implementaciones", icon: Building2 },
+  { to: "/implementations", label: "Proyectos", icon: Building2 },
   { to: "/sessions", label: "Sesiones", icon: MessageSquare },
   { to: "/reports", label: "Reportes", icon: FileBarChart },
   { to: "/user-groups", label: "Grupos", icon: Users },
@@ -47,8 +47,8 @@ export function Sidebar({ onSignOut, onClose }: Props) {
             <Zap size={20} className="text-blue-200" />
           </div>
           <div>
-            <h1 className="text-base font-display font-bold tracking-tight">Field Genius</h1>
-            <p className="text-[11px] text-blue-300/80 font-medium">Backoffice Admin</p>
+            <h1 className="text-base font-display font-bold tracking-tight">Radar Xponencial</h1>
+            <p className="text-[11px] text-blue-300/80 font-medium">Panel de control</p>
           </div>
         </div>
       </div>

@@ -110,7 +110,7 @@ export function ImplementationDetail() {
 
   const handleDelete = async () => {
     if (!id) return;
-    if (!confirm("Desactivar esta implementacion?")) return;
+    if (!confirm("Desactivar este proyecto?")) return;
     await deleteImplementation(id);
     navigate("/implementations");
   };
@@ -124,7 +124,7 @@ export function ImplementationDetail() {
   if (!impl)
     return (
       <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl">
-        Implementacion no encontrada
+        Proyecto no encontrado
       </div>
     );
 
@@ -267,7 +267,7 @@ export function ImplementationDetail() {
                 label="Mensaje de bienvenida (primera vez)"
                 value={welcomeMessage}
                 onChange={setWelcomeMessage}
-                placeholder="Bienvenido a Field Genius! Soy tu asistente..."
+                placeholder="Bienvenido a Radar Xponencial! Soy tu asistente..."
                 hint="Se envia la primera vez que un usuario escribe. Usa *bold* para negritas en WhatsApp."
               />
               {requireTerms && (

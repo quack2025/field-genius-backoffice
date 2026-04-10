@@ -102,7 +102,7 @@ export function Sessions() {
         {/* Filters row */}
         <div className="flex flex-wrap gap-3 items-end">
           <div>
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">Implementacion</label>
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">Proyecto</label>
             <select value={implFilter} onChange={(e) => setImplFilter(e.target.value)} className="input w-auto">
               <option value="">Todas</option>
               {implementations.map((i) => (

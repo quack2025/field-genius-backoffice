@@ -39,7 +39,7 @@ export function Layout({ onSignOut }: Props) {
           >
             <Menu size={20} className="text-gray-700" />
           </button>
-          <span className="font-display font-bold text-gray-900">Field Genius</span>
+          <span className="font-display font-bold text-gray-900">Radar Xponencial</span>
         </div>
 
         <div className="p-4 lg:p-8">

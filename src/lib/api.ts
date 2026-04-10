@@ -58,6 +58,7 @@ export interface Implementation {
   access_mode?: string;
   vision_strategy?: string;
   onboarding_config?: Record<string, unknown> | null;
+  folder?: string | null;
 }
 
 export const listImplementations = () =>

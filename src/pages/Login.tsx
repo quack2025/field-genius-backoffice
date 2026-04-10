@@ -63,9 +63,9 @@ export function Login({ onSignIn, onSignInWithGoogle }: Props) {
             <Zap size={28} className="text-white" />
           </div>
           <h1 className="text-2xl font-display font-bold text-gray-900">
-            Field Genius
+            Radar Xponencial
           </h1>
-          <p className="text-gray-500 text-sm mt-1">Backoffice Admin</p>
+          <p className="text-gray-500 text-sm mt-1">Panel de control</p>
         </div>
 
         {/* Google SSO button */}
