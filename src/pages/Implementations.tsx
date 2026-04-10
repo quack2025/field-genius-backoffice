@@ -40,6 +40,7 @@ export function Implementations() {
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [openFolders, setOpenFolders] = useState<Set<string>>(new Set());
+  const [allFolderNames, setAllFolderNames] = useState<string[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -48,13 +49,16 @@ export function Implementations() {
     listImplementations()
       .then((r) => {
         setItems(r.data);
-        // Auto-open all folders on first load
-        const folders = new Set<string>();
+        // Collect folder names from data + merge with manually created ones
+        const fromData = new Set<string>();
         for (const item of r.data) {
-          const f = item.folder;
-          if (f) folders.add(f);
+          if (item.folder) fromData.add(item.folder);
         }
-        setOpenFolders(folders);
+        setAllFolderNames((prev) => {
+          const merged = new Set([...prev, ...fromData]);
+          return [...merged].sort();
+        });
+        setOpenFolders((prev) => new Set([...prev, ...fromData]));
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -106,8 +110,7 @@ export function Implementations() {
       </div>
     );
 
-  const { folders, ungrouped } = groupByFolder(items);
-  const allFolderNames = folders.map((f) => f.name);
+  const { ungrouped } = groupByFolder(items);
 
   return (
     <div className="animate-fade-in">
@@ -124,8 +127,10 @@ export function Implementations() {
             onClick={() => {
               const name = prompt("Nombre de la carpeta:");
               if (name?.trim()) {
-                setOpenFolders((prev) => new Set([...prev, name.trim()]));
-                toast({ type: "success", message: `Carpeta "${name.trim()}" creada. Arrastra proyectos para organizarlos.` });
+                const n = name.trim();
+                setAllFolderNames((prev) => [...new Set([...prev, n])].sort());
+                setOpenFolders((prev) => new Set([...prev, n]));
+                toast({ type: "success", message: `Carpeta "${n}" creada. Usa el icono de carpeta en cada proyecto para moverlo.` });
               }
             }}
             className="btn-secondary flex items-center gap-1.5"
@@ -166,41 +171,48 @@ export function Implementations() {
         </div>
       )}
 
-      {/* Folders */}
-      {folders.map((folder) => (
-        <div key={folder.name} className="mb-4">
-          <button
-            onClick={() => toggleFolder(folder.name)}
-            className="flex items-center gap-2 mb-2 text-sm font-semibold text-gray-600 hover:text-brand-500 transition-colors"
-          >
-            <ChevronRight
-              size={16}
-              className={`transition-transform ${openFolders.has(folder.name) ? "rotate-90" : ""}`}
-            />
-            <Folder size={16} className="text-brand-400" />
-            {folder.name}
-            <span className="text-xs text-gray-400 font-normal">({folder.items.length})</span>
-          </button>
-          {openFolders.has(folder.name) && (
-            <div className="grid gap-2 ml-6">
-              {folder.items.map((impl) => (
-                <ProjectCard
-                  key={impl.id}
-                  impl={impl}
-                  folders={allFolderNames}
-                  onNavigate={() => navigate(`/implementations/${impl.id}`)}
-                  onMoveToFolder={handleMoveToFolder}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      ))}
+      {/* Folders — show all (including empty ones) */}
+      {allFolderNames.map((folderName) => {
+        const folderItems = items.filter((i) => i.folder === folderName);
+        return (
+          <div key={folderName} className="mb-4">
+            <button
+              onClick={() => toggleFolder(folderName)}
+              className="flex items-center gap-2 mb-2 text-sm font-semibold text-gray-600 hover:text-brand-500 transition-colors"
+            >
+              <ChevronRight
+                size={16}
+                className={`transition-transform ${openFolders.has(folderName) ? "rotate-90" : ""}`}
+              />
+              <Folder size={16} className="text-brand-400" />
+              {folderName}
+              <span className="text-xs text-gray-400 font-normal">({folderItems.length})</span>
+            </button>
+            {openFolders.has(folderName) && (
+              <div className="grid gap-2 ml-6">
+                {folderItems.length === 0 ? (
+                  <p className="text-xs text-gray-400 py-2 pl-2">Carpeta vacia — mueve proyectos aqui con el icono de carpeta.</p>
+                ) : (
+                  folderItems.map((impl) => (
+                    <ProjectCard
+                      key={impl.id}
+                      impl={impl}
+                      folders={allFolderNames}
+                      onNavigate={() => navigate(`/implementations/${impl.id}`)}
+                      onMoveToFolder={handleMoveToFolder}
+                    />
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
 
       {/* Ungrouped */}
       {ungrouped.length > 0 && (
         <div className="grid gap-2">
-          {folders.length > 0 && (
+          {allFolderNames.length > 0 && (
             <p className="text-xs text-gray-400 font-medium uppercase tracking-wider mt-2 mb-1">Sin carpeta</p>
           )}
           {ungrouped.map((impl) => (
