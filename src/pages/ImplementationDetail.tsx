@@ -31,6 +31,11 @@ export function ImplementationDetail() {
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [accessMode, setAccessMode] = useState("open");
   const [visionStrategy, setVisionStrategy] = useState("tiered");
+  const [welcomeMessage, setWelcomeMessage] = useState("");
+  const [termsAcceptedMessage, setTermsAcceptedMessage] = useState("");
+  const [rejectionMessage, setRejectionMessage] = useState("");
+  const [firstPhotoHint, setFirstPhotoHint] = useState("");
+  const [requireTerms, setRequireTerms] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -49,6 +54,12 @@ export function ImplementationDetail() {
         setWhatsappNumber(d.whatsapp_number || "");
         setAccessMode(d.access_mode || "open");
         setVisionStrategy(d.vision_strategy || "tiered");
+        const ob = (d.onboarding_config || {}) as Record<string, string | boolean>;
+        setWelcomeMessage(String(ob.welcome_message || ""));
+        setTermsAcceptedMessage(String(ob.terms_accepted_message || ""));
+        setRejectionMessage(String(ob.rejection_message || ""));
+        setFirstPhotoHint(String(ob.first_photo_hint || ""));
+        setRequireTerms(Boolean(ob.require_terms));
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -69,6 +80,13 @@ export function ImplementationDetail() {
         whatsapp_number: whatsappNumber || null,
         access_mode: accessMode,
         vision_strategy: visionStrategy,
+        onboarding_config: {
+          welcome_message: welcomeMessage || undefined,
+          terms_accepted_message: termsAcceptedMessage || undefined,
+          rejection_message: rejectionMessage || undefined,
+          first_photo_hint: firstPhotoHint || undefined,
+          require_terms: requireTerms,
+        },
       });
       alert("Guardado");
     } catch (err: unknown) {
@@ -218,6 +236,54 @@ export function ImplementationDetail() {
             </div>
           </div>
 
+          {/* Onboarding WhatsApp */}
+          <div className="card p-6 space-y-5">
+            <div className="flex items-center justify-between">
+              <h3 className="font-display font-semibold text-gray-800 text-sm">Mensajes de Onboarding (WhatsApp)</h3>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={requireTerms}
+                  onChange={(e) => setRequireTerms(e.target.checked)}
+                  className="rounded border-gray-300"
+                />
+                Requerir aceptacion de terminos
+              </label>
+            </div>
+            <div className="space-y-4">
+              <TextArea
+                label="Mensaje de bienvenida (primera vez)"
+                value={welcomeMessage}
+                onChange={setWelcomeMessage}
+                placeholder="Bienvenido a Field Genius! Soy tu asistente..."
+                hint="Se envia la primera vez que un usuario escribe. Usa *bold* para negritas en WhatsApp."
+              />
+              {requireTerms && (
+                <TextArea
+                  label="Mensaje al aceptar terminos"
+                  value={termsAcceptedMessage}
+                  onChange={setTermsAcceptedMessage}
+                  placeholder="Perfecto! Ya puedes empezar..."
+                  hint="Se envia cuando el usuario responde 'acepto'."
+                />
+              )}
+              <TextArea
+                label="Mensaje de rechazo (usuario no registrado)"
+                value={rejectionMessage}
+                onChange={setRejectionMessage}
+                placeholder="Este servicio es exclusivo para el equipo de..."
+                hint="Solo aplica en modo whitelist. Se envia a numeros no registrados."
+              />
+              <TextArea
+                label="Confirmacion de archivo recibido"
+                value={firstPhotoHint}
+                onChange={setFirstPhotoHint}
+                placeholder="Recibido ({count} archivo(s) hoy). Escribe *reporte* cuando termines."
+                hint="Usa {count} para el numero de archivos. Se envia cada vez que recibe una foto/audio."
+              />
+            </div>
+          </div>
+
           <div className="flex justify-end pt-2">
             <button
               onClick={handleSave}
@@ -258,6 +324,34 @@ function Field({
         onChange={(e) => onChange(e.target.value)}
         className="input"
       />
+    </div>
+  );
+}
+
+function TextArea({
+  label,
+  value,
+  onChange,
+  placeholder = "",
+  hint = "",
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  hint?: string;
+}) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        rows={4}
+        className="input resize-y min-h-[80px]"
+      />
+      {hint && <p className="text-xs text-gray-400 mt-1">{hint}</p>}
     </div>
   );
 }
